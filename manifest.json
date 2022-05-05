@@ -1,0 +1,23 @@
+{
+    "name": "Hard-Redirect",
+    "description": "Hard coded redirects",
+    "author": "DAFF0D11",
+    "manifest_version": 3,
+    "version": "1.0",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "permissions": [
+        "storage",
+        "tabs",
+        "scripting",
+        "activeTab",
+        "declarativeNetRequest"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "host_permissions": [
+        "<all_urls>"
+    ]
+}
