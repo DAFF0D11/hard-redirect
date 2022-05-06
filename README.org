@@ -1,4 +1,4 @@
-* Hard Redirects
+* Hard Redirect
 
 A simple browser extension to redirect urls defined by *you* in the source code.
 
