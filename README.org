@@ -1,0 +1,48 @@
+* Hard Redirects
+
+A simple browser extension to redirect urls defined by *you* in the source code.
+
+** Features
+- Regex defined url matching.
+- Enable/Disable redirects in popup menu.
+
+** How to add redirects
+
+Redirects are defined at the top of background.js.
+
+#+begin_src javascript
+   let redirectList = [
+    { id: 1, label: "google  -> startpage", from: "https://www.google.com/(.*)", to: "https://www.startpage.com/\\1", enabled: false },
+    { id: 2, label: "youtube -> piped", from: "(.*)youtube.com/(.*)", to: "https://piped.kavin.rocks/\\2", enabled: true },
+    { id: 3, label: "reddit  -> libreddit", from: "(.*)reddit.com(.*)", to: "https://libredd.it/\\2", enabled: true },
+]
+#+end_src
+Redirects are comprised of: \\
+*id:* sequential number to identify individual redirects. \\
+*label:* how the redirect is shown in the popup menu for enabling/disabling redirects. \\
+*from:* pattern to redirect. \\
+*to:* result of redirection. \\
+*enabled:* the default state of the redirect. \\
+
+** regex matching
+
+This random google support answer describes the syntax quite well. \\
+https://support.google.com/a/answer/1371415?hl=en \\
+
+** Install
+Navigate to: chrome://extensions/
+
+** Firefox
+Firefox(nightly.101.0a1) does not implement Manifest v3.
+
+Hard Redirect uses *Declarative Net Request (DNR)* which is very different from
+the manifest v2 *chrome.webRequest*.
+
+** Twitter...
+Twitter uses service workers and which do not play nicely with DNR.
+
+Workarounds: \\
+1. Directly changing the url with a content script when on twitter.com. Better
+   described in this [[https://superuser.com/questions/1630145/redirect-twitter-home-to-twitter-notifications-using-chrome-extension/16302][superuser question]].
+2. Disable all javascript for twitter. No javascript = no service workers = no
+   problems. Just remember to delete the existing service worker if there is one.
