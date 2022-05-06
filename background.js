@@ -1,56 +1,65 @@
 const redirectList = [
-    ["https:www.google.com/(.*)","https:www.startpage.com/\\1"]
+    { id: 1, label: "google -> startpage", from: "https://www.google.com(.*)", to: "https://www.startpage.com\\1", enabled: false },
+    { id: 2, label: "youtube -> piped", from: "(.*)youtube.com(.*)", to: "https://piped.kavin.rocks\\2", enabled: true },
+    { id: 3, label: "reddit -> libreddit", from: "(.*)reddit.com(.*)", to: "https://libredd.it\\2", enabled: true },
 ]
-
 
 let localRedirectList
 
 chrome.runtime.onInstalled.addListener(() => {
-    // Set local list
     chrome.storage.local.set({ hardRedirectorList: redirectList })
-    // Get local list
-    chrome.storage.local.get("hardRedirectorList", (data) => {
-        // clear and upade with local list
-        chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: Array(100).fill().map((_, i) => i + 1) })
-        chrome.declarativeNetRequest.updateSessionRules(makeRules(onlyEnabled(data.hardRedirectorList)))
+    chrome.storage.local.get("hardRedirectorList", (localRedirectList) => {
+        clearSessionRules(redirectList)
+        applySessionRules(localRedirectList)
     });
-
 });
 
 chrome.runtime.onStartup.addListener(() => {
-    chrome.storage.local.get("hardRedirectorList", (data) => {
-        chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: Array(100).fill().map((_, i) => i + 1) })
-        chrome.declarativeNetRequest.updateSessionRules(makeRules(onlyEnabled(data.hardRedirectorList)))
+    chrome.storage.local.get("hardRedirectorList", (localRedirectList) => {
+        clearSessionRules(redirectList)
+        applySessionRules(localRedirectList)
     });
 })
-let onlyEnabled = (list) => {
-    return list.filter((ele) => { return ele.enabled == true})
+
+chrome.storage.onChanged.addListener(function (changes, namespace) {
+    if (namespace === "local" && changes.hardRedirectorList?.newValue) {
+        chrome.storage.local.get("hardRedirectorList", (localRedirectList) => {
+            clearSessionRules(redirectList)
+            applySessionRules(localRedirectList)
+        });
+    }
+});
+
+let clearSessionRules = (redirectList) => {
+    chrome.declarativeNetRequest.updateSessionRules({
+        removeRuleIds: Array(redirectList.length).fill().map((_, i) => i + 1)
+    })
 }
-let makeRules = (list) => {
+
+let applySessionRules = (localRedirectList) => {
+    chrome.declarativeNetRequest.updateSessionRules(formatRules(onlyEnabled(localRedirectList.hardRedirectorList)))
+}
+
+let onlyEnabled = (localRedirectList) => {
+    return localRedirectList.filter((rule) => { return rule.enabled == true })
+}
+
+let formatRules = (localRedirectList) => {
     let delIds = []
     let rules = []
-    for (let i = 0; i < list.length; i++) {
+    for (let i = 0; i < localRedirectList.length; i++) {
         rules.push({
-            id: list[i].id,
+            id: localRedirectList[i].id,
             action: {
                 type: "redirect",
-                redirect: { regexSubstitution: list[i].to }
+                redirect: { regexSubstitution: localRedirectList[i].to }
             },
             condition: {
                 resourceTypes: ["main_frame"],
-                regexFilter: list[i].from
+                regexFilter: localRedirectList[i].from
             }
         })
         delIds.push(i + 1)
     }
-
     return { removeRuleIds: delIds, addRules: rules }
 }
-
-chrome.storage.onChanged.addListener(function (changes, namespace) {
-    console.log("onChanged")
-    chrome.storage.local.get("hardRedirectorList", (data) => {
-        chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: Array(100).fill().map((_, i) => i + 1) })
-        chrome.declarativeNetRequest.updateSessionRules(makeRules(onlyEnabled(data.hardRedirectorList)))
-    });
-});

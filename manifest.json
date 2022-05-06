@@ -9,9 +9,6 @@
     },
     "permissions": [
         "storage",
-        "tabs",
-        "scripting",
-        "activeTab",
         "declarativeNetRequest"
     ],
     "action": {

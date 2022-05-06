@@ -1,34 +1,31 @@
-// Snag our button
-let btn = document.getElementById("changeFont")
 let form = document.getElementById("redirectList")
 
-chrome.storage.local.get("hardRedirectorList", (redirList) => {
+chrome.storage.local.get("hardRedirectorList", (localRedirectList) => {
 
-    redirList.hardRedirectorList.forEach(ele => {
+    localRedirectList.hardRedirectorList.forEach(rule => {
         let input = document.createElement("input")
-        input.setAttribute("type","checkbox")
-        input.setAttribute("id",ele.id)
-        input.setAttribute("name",ele.from)
-        input.setAttribute("value",ele.to)
+        input.setAttribute("type", "checkbox")
+        input.setAttribute("id", rule.id)
+        input.setAttribute("name", rule.from)
+        input.setAttribute("value", rule.to)
         let label = document.createElement("label")
-        label.setAttribute("for",ele.id)
-        label.appendChild(document.createTextNode(ele.label))
+        label.setAttribute("for", rule.id)
+        label.appendChild(document.createTextNode(rule.label))
         let br = document.createElement("br")
         form.appendChild(input)
-        input.onclick = function() {handleChange(input, redirList)}
+        input.onclick = function () { handleChange(input, localRedirectList) }
         form.appendChild(label)
         form.appendChild(br)
-        document.getElementById(ele.id).checked = ele.enabled
-
+        document.getElementById(rule.id).checked = rule.enabled
     })
 });
 
-function handleChange(checkbox,redirList) {
- let list = redirList.hardRedirectorList
-    for(let i = 0; i < list.length; i++){
-        if(list[i].id == checkbox.id) {
-            list[i].enabled = !list[i].enabled
+function handleChange(input, localRedirectList) {
+    let lrl = localRedirectList.hardRedirectorList
+    for (let i = 0; i < lrl.length; i++) {
+        if (lrl[i].id == input.id) {
+            lrl[i].enabled = !lrl[i].enabled
         }
     }
-    chrome.storage.local.set({ hardRedirectorList: list })
+    chrome.storage.local.set({ hardRedirectorList: lrl })
 }
